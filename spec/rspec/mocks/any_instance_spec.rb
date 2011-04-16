@@ -1,5 +1,15 @@
 require 'spec_helper'
 
+class DummyClass
+  def foo
+    "real implementation"
+  end
+
+  def bar
+    foo
+  end
+end
+
 module RSpec
   module Mocks
     describe "#any_instance" do
@@ -194,6 +204,38 @@ module RSpec
                 instance_one.foo
                 instance_two.foo
               end.to raise_error(RSpec::Mocks::MockExpectationError, "The message 'foo' was received by #{instance_two.inspect} but has already been received by #{instance_one.inspect}")
+            end
+
+            context "it should not cross tests: use DummyClass" do
+
+              it "test for expectation of bar" do
+                DummyClass.any_instance.should_receive(:bar)
+                DummyClass.new.bar
+              end
+
+              it "in the next test it should be able to use :bar again" do
+                DummyClass.new.bar.should == "real implementation"
+              end
+
+              it "test for expectation of foo, called by bar" do
+                DummyClass.any_instance.should_receive(:foo)
+                DummyClass.new.bar
+              end
+
+              it "in the next test it should be able to use :foo again" do
+                DummyClass.new.foo.should == "real implementation"
+              end
+            end
+
+            context "should not span contexts?" do
+              it "in the next test it should be able to use :bar again" do
+                DummyClass.new.bar.should == "real implementation"
+              end
+
+              it "in the next test it should be able to use :foo again" do
+                DummyClass.new.foo.should == "real implementation"
+              end
+
             end
           end
         end
