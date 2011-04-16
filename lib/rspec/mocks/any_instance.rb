@@ -137,6 +137,7 @@ module RSpec
           observed_method_names.each do |method_name|
             restore_method!(method_name)
           end
+          @observed_methods = []
         end
 
         def playback_to_uninvoked_observed_methods_with_stubs_or_expectations!(instance)
@@ -193,7 +194,6 @@ module RSpec
           else
             remove_dummy_method!(method_name)
           end
-          @observed_methods.delete(method_name)
         end
         
         def observed_method_names
